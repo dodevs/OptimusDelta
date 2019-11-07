@@ -4,14 +4,14 @@
 #include <pthread.h>
 
 // MATRIX
-#define MATRIX_M 10000
-#define MATRIX_N 10000
+#define MATRIX_M 10
+#define MATRIX_N 10
 #define MATRIX_LEN MATRIX_M * MATRIX_N
 int matrix[MATRIX_M][MATRIX_N];
 
 // MACROBLOCO
-#define MACROBLOCO_M 5000
-#define MACROBLOCO_N 5000
+#define MACROBLOCO_M 2
+#define MACROBLOCO_N 2
 #define QTD_ELEM MACROBLOCO_M * MACROBLOCO_N
 #define QTD_MB MATRIX_LEN / QTD_ELEM
 
@@ -29,6 +29,7 @@ pthread_mutex_t mutex;
 
 void *rotina(void *arg);
 int verificaPrimo(int num);
+int verificaPrimo2(int num);
 
 int verificaPrimo(int num) {
     int resultado = 0;
@@ -48,13 +49,15 @@ int verificaPrimo2(int num) {
         EhPrimo = 0;	/* numenhum numero inteiro <= 1 ou par > 2 e' primo */
     else
         EhPrimo = 1;		/* o numero e' primo ate que se prove o contrario */
-        
+
     d = 3;
     while (EhPrimo  && d <= num / 2) {
         if (num % d == 0)
             EhPrimo = 0;
         d = d + 2;		/* testamos so' os  impares: 3, 5, 7... */
     }
+
+    return EhPrimo;
 }
 
 void *rotina(void *arg) {
@@ -82,6 +85,7 @@ void *rotina(void *arg) {
         }
 
         pthread_mutex_lock(&mutex);
+        primos = primos + local_primos;
         local_lr = lr;
         local_lc = lc;
         if(lc == (MATRIX_N - MACROBLOCO_N)) {
