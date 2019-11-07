@@ -9,7 +9,7 @@
 /home/dodev/CLionProjects/OptimusDelta/main.c
 stdio.h
 -
-math.h
+time.h
 -
 stdlib.h
 -

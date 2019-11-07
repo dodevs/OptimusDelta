@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="OptimusDelta" type="CMakeRunConfiguration" factoryName="Application" nameIsGenerated="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OptimusDelta" TARGET_NAME="OptimusDelta" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OptimusDelta" RUN_TARGET_NAME="OptimusDelta">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>
