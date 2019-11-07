@@ -4,14 +4,14 @@
 #include <pthread.h>
 
 // MATRIX
-#define MATRIX_M 20000
-#define MATRIX_N 20000
+#define MATRIX_M 10000
+#define MATRIX_N 10000
 #define MATRIX_LEN MATRIX_M * MATRIX_N
 int matrix[MATRIX_M][MATRIX_N];
 
 // MACROBLOCO
-#define MACROBLOCO_M 2000
-#define MACROBLOCO_N 2000
+#define MACROBLOCO_M 5000
+#define MACROBLOCO_N 5000
 #define QTD_ELEM MACROBLOCO_M * MACROBLOCO_N
 #define QTD_MB MATRIX_LEN / QTD_ELEM
 
@@ -41,6 +41,22 @@ int verificaPrimo(int num) {
     return resultado;
 }
 
+int verificaPrimo2(int num) {
+    int d, EhPrimo;
+
+    if (num <= 1 || (num != 2 && num % 2 == 0))
+        EhPrimo = 0;	/* numenhum numero inteiro <= 1 ou par > 2 e' primo */
+    else
+        EhPrimo = 1;		/* o numero e' primo ate que se prove o contrario */
+        
+    d = 3;
+    while (EhPrimo  && d <= num / 2) {
+        if (num % d == 0)
+            EhPrimo = 0;
+        d = d + 2;		/* testamos so' os  impares: 3, 5, 7... */
+    }
+}
+
 void *rotina(void *arg) {
     int qtd_elem_mn = sqrt(QTD_ELEM);
     int local_primos = 0;
@@ -59,7 +75,7 @@ void *rotina(void *arg) {
     while(local_lr < MATRIX_M && local_lc < MATRIX_N) {
         for(int i = local_lr; i < local_lr + MACROBLOCO_M; i++) {
             for(int j = local_lc; j < local_lc + MACROBLOCO_N; j++) {
-                if(verificaPrimo(matrix[i][j]) == 0) {
+                if(verificaPrimo2(matrix[i][j])) {
                     local_primos++;
                 }
             }
