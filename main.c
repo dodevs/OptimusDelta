@@ -4,14 +4,14 @@
 #include <pthread.h>
 
 // MATRIX
-#define MATRIX_M 10
-#define MATRIX_N 10
+#define MATRIX_M 10000
+#define MATRIX_N 10000
 #define MATRIX_LEN MATRIX_M * MATRIX_N
 int matrix[MATRIX_M][MATRIX_N];
 
 // MACROBLOCO
-#define MACROBLOCO_M 2
-#define MACROBLOCO_N 2
+#define MACROBLOCO_M 5000
+#define MACROBLOCO_N 5000
 #define QTD_ELEM MACROBLOCO_M * MACROBLOCO_N
 #define QTD_MB MATRIX_LEN / QTD_ELEM
 
@@ -95,9 +95,8 @@ void *rotina(void *arg) {
             lc += MACROBLOCO_N;
         }
         pthread_mutex_unlock(&mutex);
+        local_primos = 0;
     }
-
-    printf("Local primos: %d\n", local_primos);
     pthread_exit((void*)NULL);
 
 }
