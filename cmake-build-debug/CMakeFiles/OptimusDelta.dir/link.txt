@@ -1,0 +1,1 @@
+/usr/bin/cc  -pthread -g   CMakeFiles/OptimusDelta.dir/main.c.o  -o OptimusDelta 
