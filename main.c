@@ -4,24 +4,28 @@
 #include <pthread.h>
 
 // MATRIX
-#define MATRIX_M 10000
-#define MATRIX_N 10000
+#define MATRIX_M 20000
+#define MATRIX_N 20000
 #define MATRIX_LEN MATRIX_M * MATRIX_N
 int matrix[MATRIX_M][MATRIX_N];
 
-// QUANTIDADE DE COISAS
-#define QTD_ELEM 100
+// MACROBLOCO
+#define MACROBLOCO_M 2000
+#define MACROBLOCO_N 2000
+#define QTD_ELEM MACROBLOCO_M * MACROBLOCO_N
 #define QTD_MB MATRIX_LEN / QTD_ELEM
-#define RANDOM_SEED 0.0000005
 
-// CONTROLE
+// CONTROLE SECAO CRITICA
 int lr, lc = 0;
 int primos = 0;
 
-// Pthreads
-#define QTD_THREADS 8
+// THREADS
+#define QTD_THREADS 4
 pthread_t tid[QTD_THREADS];
 pthread_mutex_t mutex;
+
+// RANDOM
+#define RANDOM_SEED 0.0000005
 
 void *rotina(void *arg);
 int verificaPrimo(int num);
@@ -44,17 +48,17 @@ void *rotina(void *arg) {
     pthread_mutex_lock(&mutex);
     int local_lr = lr;
     int local_lc = lc;
-    if(lc == (MATRIX_N - qtd_elem_mn)) {
-        lr += qtd_elem_mn;
+    if(lc == (MATRIX_N - MACROBLOCO_N)) {
+        lr += MACROBLOCO_M;
         lc = 0;
     } else {
-        lc += qtd_elem_mn;
+        lc += MACROBLOCO_N;
     }
     pthread_mutex_unlock(&mutex);
 
     while(local_lr < MATRIX_M && local_lc < MATRIX_N) {
-        for(int i = local_lr; i < local_lr + qtd_elem_mn; i++) {
-            for(int j = local_lc; j < local_lc + qtd_elem_mn; j++) {
+        for(int i = local_lr; i < local_lr + MACROBLOCO_M; i++) {
+            for(int j = local_lc; j < local_lc + MACROBLOCO_N; j++) {
                 if(verificaPrimo(matrix[i][j]) == 0) {
                     local_primos++;
                 }
@@ -64,11 +68,11 @@ void *rotina(void *arg) {
         pthread_mutex_lock(&mutex);
         local_lr = lr;
         local_lc = lc;
-        if(lc == (MATRIX_N - qtd_elem_mn)) {
-            lr += qtd_elem_mn;
+        if(lc == (MATRIX_N - MACROBLOCO_N)) {
+            lr += MACROBLOCO_M;
             lc = 0;
         } else {
-            lc += qtd_elem_mn;
+            lc += MACROBLOCO_N;
         }
         pthread_mutex_unlock(&mutex);
     }
