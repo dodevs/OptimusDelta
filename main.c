@@ -4,15 +4,16 @@
 #include <pthread.h>
 
 // MATRIX
-#define MATRIX_MN 10
-#define MATRIX_LEN MATRIX_MN * MATRIX_MN
-int matrix[MATRIX_MN][MATRIX_MN];
+#define MATRIX_M 2000
+#define MATRIX_N 2000
+#define MATRIX_LEN MATRIX_M * MATRIX_N
+int matrix[MATRIX_M][MATRIX_N];
 
-#define QTD_ELEM 4
+// QUANTIDADE DE COISAS
+#define QTD_ELEM 40000
 #define QTD_MB MATRIX_LEN / QTD_ELEM
 
-// Controle
-int mb_restantes = QTD_MB;
+// CONTROLE
 int lr, lc = 0;
 int primos = 0;
 
@@ -38,14 +39,11 @@ int verificaPrimo(int num) {
 void *rotina(void *arg) {
     int qtd_elem_mn = sqrt(QTD_ELEM);
     int local_primos = 0;
-    //int mbr;
 
     pthread_mutex_lock(&mutex);
-//    mbr = mb_restantes;
-//    mb_restantes--;
     int local_lr = lr;
     int local_lc = lc;
-    if(lc == (MATRIX_MN - qtd_elem_mn)) {
+    if(lc == (MATRIX_N - qtd_elem_mn)) {
         lr += qtd_elem_mn;
         lc = 0;
     } else {
@@ -53,7 +51,7 @@ void *rotina(void *arg) {
     }
     pthread_mutex_unlock(&mutex);
 
-    while(local_lr < MATRIX_MN && local_lc < MATRIX_MN) {
+    while(local_lr < MATRIX_M && local_lc < MATRIX_N) {
         for(int i = local_lr; i < local_lr + qtd_elem_mn; i++) {
             for(int j = local_lc; j < local_lc + qtd_elem_mn; j++) {
                 //printf("linha %d coluna %d = %d\n", i, j, matrix[i][j]);
@@ -67,12 +65,10 @@ void *rotina(void *arg) {
         //printf("\n");
 
         pthread_mutex_lock(&mutex);
-//        mbr = mb_restantes;
-//        mb_restantes--;
-        primos += local_primos;
+        //primos += local_primos;
         local_lr = lr;
         local_lc = lc;
-        if(lc == (MATRIX_MN - qtd_elem_mn)) {
+        if(lc == (MATRIX_N - qtd_elem_mn)) {
             lr += qtd_elem_mn;
             lc = 0;
         } else {
@@ -80,6 +76,8 @@ void *rotina(void *arg) {
         }
         pthread_mutex_unlock(&mutex);
     }
+
+    printf("Local primos: %d\n", local_primos);
     pthread_exit((void*)NULL);
 
 }
@@ -88,8 +86,8 @@ int main() {
     int i;
     int k = 0;
 
-    for(i = 0; i < MATRIX_MN; i++) {
-        for(int j = 0; j < MATRIX_MN; j++) {
+    for(i = 0; i < MATRIX_M; i++) {
+        for(int j = 0; j < MATRIX_N; j++) {
             matrix[i][j] = k;
             k++;
         }
@@ -107,7 +105,7 @@ int main() {
         pthread_join(tid[i], NULL);
     }
 
-    printf("Numeros primos: %d", primos);
+    printf("Numeros primos: %d\n", primos);
 
     pthread_mutex_destroy(&mutex);
 }
