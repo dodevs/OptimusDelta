@@ -27,9 +27,9 @@ pthread_mutex_t mutex;
 #define RANDOM_SEED 1
 
 
-void* rotina(void* arg);
+void percorreMatrizSerial();
+void* percorreMatriz(void* arg);
 int verificaPrimo(int num);
-
 
 int verificaPrimo(int num) {
 
@@ -51,7 +51,18 @@ int verificaPrimo(int num) {
 }
 
 
-void* rotina(void* arg) {
+void percorreMatrizSerial() {
+
+	for (int i = 0; i < MATRIX_M; i++) {
+		for (int j = 0; j < MATRIX_N; j++) {
+			if (verificaPrimo(matrix[i][j]) == 1) {
+				primos++;
+			}
+		}
+	}
+}
+
+void* percorreMatriz(void* arg) {
 	int local_primos = 0;
 	int local_lr, local_lc;
 
@@ -65,7 +76,6 @@ void* rotina(void* arg) {
 	else {
 		lc += MACROBLOCO_N;
 	}
-
 	pthread_mutex_unlock(&mutex);
 
 	while (local_lr < MATRIX_M && local_lc < MATRIX_N) {
@@ -94,38 +104,42 @@ void* rotina(void* arg) {
 	}
 
 	pthread_exit((void*)NULL);
-
 }
 
 
 int main() {
 	int i;
+	clock_t tempo_inicial, tempo_final;
 	srand(RANDOM_SEED);
 
-	pthread_mutex_init(&mutex, NULL);
-
-	clock_t ticks[2];
-
-	ticks[0] = clock();
-
+	// Inicializacao da Matriz
 	for (i = 0; i < MATRIX_M; i++) {
 		for (int j = 0; j < MATRIX_N; j++) {
 			matrix[i][j] = rand() % 29999;
 		}
 	}
 
-	for (i = 0; i < QTD_THREADS; i++) {
-		pthread_create(&(tid[i]), NULL, rotina, (void*)NULL);
-	}
+	// Execução serial
+	tempo_inicial = clock();
+	percorreMatrizSerial();
+	tempo_final = clock();
 
+	printf("Tempo gasto em modo serial: %g ms.\n", (tempo_final - tempo_inicial) * 1000.0 / CLOCKS_PER_SEC);
+	printf("Numeros primos encontrados: %d\n", primos);
+	primos = 0;
+
+	// Busca paralela
+	pthread_mutex_init(&mutex, NULL);
+	tempo_inicial = clock();
+	for (i = 0; i < QTD_THREADS; i++) {
+		pthread_create(&(tid[i]), NULL, percorreMatriz, (void*)NULL);
+	}
 	for (i = 0; i < QTD_THREADS; i++) {
 		pthread_join(tid[i], NULL);
 	}
-
-	ticks[1] = clock();
-
-	printf("Numeros primos: %d\n", primos);
-	printf("Tempo gasto: %g ms.\n", (ticks[1] - ticks[0]) * 1000.0 / CLOCKS_PER_SEC);
+	tempo_final = clock();
+	printf("Tempo gasto em modo paralelo: %g ms.\n", (tempo_final - tempo_inicial) * 1000.0 / CLOCKS_PER_SEC);
+	printf("Numeros primos encontrados: %d\n", primos);
 
 	pthread_mutex_destroy(&mutex);
 
