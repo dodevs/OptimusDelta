@@ -10,8 +10,8 @@
 long int matrix[MATRIX_M][MATRIX_N];
 
 // MACROBLOCO
-#define MACROBLOCO_M 5000
-#define MACROBLOCO_N 5000
+#define MACROBLOCO_M 500
+#define MACROBLOCO_N 500
 #define QTD_ELEM MACROBLOCO_M * MACROBLOCO_N
 
 // CONTROLE SECAO CRITICA
@@ -22,13 +22,15 @@ int primos = 0;
 #define QTD_THREADS 4
 pthread_t tid[QTD_THREADS];
 pthread_mutex_t mutex;
+int thstatus;
 
 // RANDOM
 #define RANDOM_SEED 1
 
 
 void percorreMatrizSerial();
-void* percorreMatriz(void* arg);
+void percorreMatrizParalelo();
+void* rotinaMacrobloco(void* arg);
 int verificaPrimo(int num);
 
 int verificaPrimo(int num) {
@@ -36,15 +38,15 @@ int verificaPrimo(int num) {
 	int d, EhPrimo;
 
 	if (num <= 1 || (num != 2 && num % 2 == 0))
-		EhPrimo = 0;	/* numenhum numero inteiro <= 1 ou par > 2 não é primo */
+		EhPrimo = 0;
 	else
-		EhPrimo = 1;		/* o numero é primo ate que se prove o contrario */
+		EhPrimo = 1;
 
 	d = 3;
 	while (EhPrimo && d <= sqrt(num)) {
 		if (num % d == 0)
 			EhPrimo = 0;
-		d = d + 2;		/* testamos so' os  impares: 3, 5, 7... */
+		d = d + 2;
 	}
 
 	return EhPrimo;
@@ -62,7 +64,26 @@ void percorreMatrizSerial() {
 	}
 }
 
-void* percorreMatriz(void* arg) {
+void percorreMatrizParalelo() {
+	int i;
+
+	pthread_mutex_init(&mutex, NULL);
+
+	for (i = 0; i < QTD_THREADS; i++) {
+		thstatus = pthread_create(&(tid[i]), NULL, rotinaMacrobloco, (void*)NULL);
+		if (thstatus != 0) {
+			printf("Erro na criação da Thread %d\n", i);
+		}
+	}
+	for (i = 0; i < QTD_THREADS; i++) {
+		thstatus = pthread_join(tid[i], NULL);
+		if (thstatus != 0) {
+			printf("Erro ao chamar a thread %d\n", i);
+		}
+	}
+}
+
+void* rotinaMacrobloco(void* arg) {
 	int local_primos = 0;
 	int local_lr, local_lc;
 
@@ -108,12 +129,11 @@ void* percorreMatriz(void* arg) {
 
 
 int main() {
-	int i;
 	clock_t tempo_inicial, tempo_final;
 	srand(RANDOM_SEED);
 
 	// Inicializacao da Matriz
-	for (i = 0; i < MATRIX_M; i++) {
+	for (int i = 0; i < MATRIX_M; i++) {
 		for (int j = 0; j < MATRIX_N; j++) {
 			matrix[i][j] = rand() % 29999;
 		}
@@ -129,15 +149,10 @@ int main() {
 	primos = 0;
 
 	// Busca paralela
-	pthread_mutex_init(&mutex, NULL);
 	tempo_inicial = clock();
-	for (i = 0; i < QTD_THREADS; i++) {
-		pthread_create(&(tid[i]), NULL, percorreMatriz, (void*)NULL);
-	}
-	for (i = 0; i < QTD_THREADS; i++) {
-		pthread_join(tid[i], NULL);
-	}
+	percorreMatrizParalelo();
 	tempo_final = clock();
+
 	printf("Tempo gasto em modo paralelo: %g ms.\n", (tempo_final - tempo_inicial) * 1000.0 / CLOCKS_PER_SEC);
 	printf("Numeros primos encontrados: %d\n", primos);
 
